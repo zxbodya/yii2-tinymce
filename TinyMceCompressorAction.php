@@ -44,7 +44,7 @@ class TinyMceCompressorAction extends CAction
         if (empty($this->settings["tinymce_dir"]))
             $this->settings["tinymce_dir"] = dirname(__FILE__) . '/vendors/tinymce/jscripts/tiny_mce';
         if (empty($this->settings["baseUrl"]))
-            $this->settings["baseUrl"] = Yii::app()->assetManager->publish($dir, false, -1, true);
+            $this->settings["baseUrl"] = Yii::app()->assetManager->publish($dir);
     }
 
     public function run()
