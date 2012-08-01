@@ -117,7 +117,7 @@ class TinyMce extends CInputWidget
             $name = $this->htmlOptions['name'];
 
         if (isset($this->model)) {
-            echo CHtml::textArea($name, $this->model->{$this->attribute}, $this->htmlOptions);
+            echo CHtml::textArea($name, CHtml::resolveValue($this->model,$this->attribute), $this->htmlOptions);
         } else {
             echo CHtml::textArea($name, $this->value, $this->htmlOptions);
         }
