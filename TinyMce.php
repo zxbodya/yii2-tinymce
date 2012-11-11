@@ -68,8 +68,7 @@ class TinyMce extends CInputWidget
         //'media_external_list_url' => "lists/media_list.js",
 
         // Replace values for the template plugin
-        'template_replace_values' => array(
-        ),
+        'template_replace_values' => array(),
 
 
     );
@@ -96,7 +95,7 @@ class TinyMce extends CInputWidget
             else
                 $this->settings['language'] = 'en';
         }
-        $this->settings['language']= strtr($this->settings['language'],'_','-');
+        $this->settings['language'] = strtr($this->settings['language'], '_', '-');
 
         $this->settings['script_url'] = "{$this->assetsDir}/tiny_mce.js";
         if ($this->spellcheckerRoute !== false) {
@@ -117,7 +116,7 @@ class TinyMce extends CInputWidget
             $name = $this->htmlOptions['name'];
 
         if (isset($this->model)) {
-            echo CHtml::textArea($name, CHtml::resolveValue($this->model,$this->attribute), $this->htmlOptions);
+            echo CHtml::textArea($name, CHtml::resolveValue($this->model, $this->attribute), $this->htmlOptions);
         } else {
             echo CHtml::textArea($name, $this->value, $this->htmlOptions);
         }
@@ -137,6 +136,7 @@ class TinyMce extends CInputWidget
                 "themes" => $this->settings['theme'],
                 "languages" => $this->settings['language'],
                 'files' => 'jquery.tinymce',
+                'source' => defined('YII_DEBUG') && YII_DEBUG,
             )));
         }
         if ($this->fileManager !== false) {
