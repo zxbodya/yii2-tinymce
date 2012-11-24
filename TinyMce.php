@@ -2,12 +2,28 @@
 
 require_once(dirname(__FILE__) . '/TinyMceCompressorAction.php');
 
+/**
+ * @property
+ */
 class TinyMce extends CInputWidget
 {
     /** @var bool|string Route to compressor action */
     public $compressorRoute = false;
-    /** @var bool|string Route to spellchecker action */
+
+    /**
+     * @deprecated use spellcheckerUrl instead
+     * @var bool|string Route to spellchecker action
+     */
     public $spellcheckerRoute = false;
+
+    /**
+     * For example here could be url to yandex spellchecker service.
+     * http://speller.yandex.net/services/tinyspell
+     * More info about it here: http://api.yandex.ru/speller/doc/dg/tasks/how-to-spellcheck-tinymce.xml
+     *
+     * @var bool|string|array URL or an action route that can be used to create a URL or false if no url
+     */
+    public $spellcheckerUrl = false;
 
     private $assetsDir;
     /** @var bool|string Must be set to force widget language */
@@ -98,9 +114,12 @@ class TinyMce extends CInputWidget
         $this->settings['language'] = strtr($this->settings['language'], '_', '-');
 
         $this->settings['script_url'] = "{$this->assetsDir}/tiny_mce.js";
-        if ($this->spellcheckerRoute !== false) {
+        if(false!==$this->spellcheckerRoute && false ===$this->spellcheckerUrl)
+            $this->spellcheckerUrl = Yii::app()->createUrl($this->spellcheckerRoute);
+
+        if ($this->spellcheckerUrl !== false) {
             $this->settings['plugins'] .= ',spellchecker';
-            $this->settings['spellchecker_rpc_url'] = Yii::app()->createUrl($this->spellcheckerRoute);
+            $this->settings['spellchecker_rpc_url'] = CHtml::normalizeUrl($this->spellcheckerUrl);
         }
 
     }
