@@ -4,7 +4,7 @@
  *
  * @package MCManager.includes
  * @author Moxiecode
- * @copyright Copyright ï¿½ 2004-2007, Moxiecode Systems AB, All rights reserved.
+ * @copyright Copyright © 2004-2007, Moxiecode Systems AB, All rights reserved.
  */
 
 class GoogleSpell extends SpellChecker {
@@ -39,7 +39,7 @@ class GoogleSpell extends SpellChecker {
 		$matches = $this->_getMatches($lang, $word);
 
 		if (count($matches) > 0)
-			$sug = explode("\t", /*utf8_encode*/($this->_unhtmlentities($matches[0][4])));
+			$sug = explode("\t", utf8_encode($this->_unhtmlentities($matches[0][4])));
 
 		// Remove empty
 		foreach ($sug as $item) {
@@ -50,7 +50,9 @@ class GoogleSpell extends SpellChecker {
 		return $osug;
 	}
 
-	function &_getMatches($lang, $str) {
+	protected function &_getMatches($lang, $str) {
+		$lang = preg_replace('/[^a-z\-]/i', '', $lang); // Sanitize, remove everything but a-z or -
+		$str = preg_replace('/[\x00-\x1F\x7F]/', '', $str); // Sanitize, remove all control characters
 		$server = "www.google.com";
 		$port = 443;
 		$path = "/tbproxy/spell?lang=" . $lang . "&hl=en";
@@ -105,7 +107,7 @@ class GoogleSpell extends SpellChecker {
 		return $matches;
 	}
 
-	function _unhtmlentities($string) {
+	protected function _unhtmlentities($string) {
 		$string = preg_replace('~&#x([0-9a-f]+);~ei', 'chr(hexdec("\\1"))', $string);
 		$string = preg_replace('~&#([0-9]+);~e', 'chr(\\1)', $string);
 

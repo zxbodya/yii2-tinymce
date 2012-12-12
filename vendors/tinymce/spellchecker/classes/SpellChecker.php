@@ -4,14 +4,14 @@
  *
  * @package MCManager.includes
  * @author Moxiecode
- * @copyright Copyright ï¿½ 2004-2007, Moxiecode Systems AB, All rights reserved.
+ * @copyright Copyright © 2004-2007, Moxiecode Systems AB, All rights reserved.
  */
 
 class SpellChecker {
 	/**
 	 * Constructor.
 	 *
-	 * @param $config array name/value array.
+	 * @param $config Configuration name/value array.
 	 */
 	function SpellChecker(&$config) {
 		$this->_config = $config;
