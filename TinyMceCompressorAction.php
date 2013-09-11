@@ -134,7 +134,7 @@ class TinyMceCompressorAction extends CAction
         }
 
         // Generate hash for all files
-        $hash = md5(implode('', $allFiles));
+        $hash = md5(implode('', $allFiles ). $this->settings['baseUrl']);
 
         // Check if it supports gzip
         $zlibOn = ini_get('zlib.output_compression') || (ini_set('zlib.output_compression', 0) === false);
