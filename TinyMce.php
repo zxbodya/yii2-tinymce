@@ -44,7 +44,7 @@ class TinyMce extends CInputWidget
         'es', 'et', 'eu', 'fa', 'fi', 'fr', 'gl', 'gu', 'he', 'hi', 'hr', 'hu', 'hy', 'ia', 'id', 'is',
         'it', 'ja', 'ka', 'kl', 'km', 'ko', 'lb', 'lt', 'lv', 'mk', 'ml', 'mn', 'ms', 'my', 'nb', 'nl',
         'nn', 'no', 'pl', 'ps', 'pt', 'ro', 'ru', 'sc', 'se', 'si', 'sk', 'sl', 'sq', 'sr', 'sv', 'sy',
-        'ta', 'te', 'th', 'tn', 'tr', 'tt', 'tw', 'uk', 'ur', 'vi', 'zh_cn', 'zh_tw', 'zh', 'zu',); // widget supported languages
+        'ta', 'te', 'th', 'tn', 'tr', 'tt', 'tw', 'uk', 'ur', 'vi', 'zh_cn', 'zh_tw', 'zh', 'zu', 'ct', 'kb'); // widget supported languages
 
 
     private static $defaultSettings = array(
