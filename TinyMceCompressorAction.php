@@ -38,11 +38,11 @@ class TinyMceCompressorAction extends CAction
     {
         $this->settings = array_merge(self::$defaultSettings, $this->settings);
 
-        $dir = dirname(__FILE__) . '/vendors/tinymce/jscripts/tiny_mce';
+        $dir = dirname(__FILE__) . '/vendors/tinymce/js/tinymce';
         if (empty($this->settings["cache_dir"]))
             $this->settings["cache_dir"] = Yii::getPathOfAlias('application.runtime');
         if (empty($this->settings["tinymce_dir"]))
-            $this->settings["tinymce_dir"] = dirname(__FILE__) . '/vendors/tinymce/jscripts/tiny_mce';
+            $this->settings["tinymce_dir"] = dirname(__FILE__) . '/vendors/tinymce/js/tinymce';
         if (empty($this->settings["baseUrl"]))
             $this->settings["baseUrl"] = Yii::app()->assetManager->publish($dir);
     }
@@ -78,54 +78,87 @@ class TinyMceCompressorAction extends CAction
         $plugins = explode(',', $this->settings["plugins"]);
 
         $themes = self::getParam("themes");
-        if ($themes)
+        if ($themes) // Plugins
+            $plugins = self::getParam("plugins");
+        if ($plugins) {
+            $this->settings["plugins"] = $plugins;
+        }
+
+        //$plugins = preg_split('/,/', $this->settings["plugins"], -1, PREG_SPLIT_NO_EMPTY);
+
+        // Themes
+        $themes = self::getParam("themes");
+        if ($themes) {
             $this->settings["themes"] = $themes;
-        $themes = explode(',', $this->settings["themes"]);
+        }
 
+        $themes = preg_split('/,/', $this->settings["themes"], -1, PREG_SPLIT_NO_EMPTY);
+
+        // Languages
         $languages = self::getParam("languages");
-        if ($languages)
+        if ($languages) {
             $this->settings["languages"] = $languages;
-        $languages = explode(',', $this->settings["languages"]);
+        }
 
+        $languages = preg_split('/,/', $this->settings["languages"], -1, PREG_SPLIT_NO_EMPTY);
+
+        // Files
         $tagFiles = self::getParam("files");
-        if ($tagFiles)
+        if ($tagFiles) {
             $this->settings["files"] = $tagFiles;
+        }
 
+        // Diskcache option
+        $diskCache = self::getParam("diskcache");
+        if ($diskCache) {
+            $this->settings["disk_cache"] = ($diskCache === "true");
+        }
+
+        // Source or minified version
         $src = self::getParam("src");
-        if ($src)
+        if ($src) {
             $this->settings["source"] = ($src === "true");
+        }
 
-        // Add core
-        $files[] = "tiny_mce";
-        foreach ($languages as $language)
-            $files[] = "langs/$language";
+        // Add core js
+        if (self::getParam("core", "true") === "true") {
+            $files[] = "tinymce";
+        }
+
+        // Add core languages
+        foreach ($languages as $language) {
+            $files[] = "langs/" . $language;
+        }
 
         // Add plugins
         foreach ($plugins as $plugin) {
-            $files[] = "plugins/$plugin/editor_plugin";
+            $files[] = "plugins/" . $plugin . "/plugin";
 
-            foreach ($languages as $language)
-                $files[] = "plugins/$plugin/langs/$language";
+            foreach ($languages as $language) {
+                $files[] = "plugins/" . $plugin . "/langs/" . $language;
+            }
         }
 
         // Add themes
         foreach ($themes as $theme) {
-            $files[] = "themes/$theme/editor_template";
+            $files[] = "themes/" . $theme . "/theme";
 
-            foreach ($languages as $language)
-                $files[] = "themes/$theme/langs/$language";
+            foreach ($languages as $language) {
+                $files[] = "themes/" . $theme . "/langs/" . $language;
+            }
         }
 
         // Add any specified files.
-        $allFiles = array_merge($files, explode(',', $this->settings['files']));
+        $allFiles = array_merge($files, preg_split('/,/', $this->settings['files'], -1, PREG_SPLIT_NO_EMPTY));
+
         // Process source files
         for ($i = 0; $i < count($allFiles); $i++) {
             $file = $tinymceDir . "/" . $allFiles[$i];
 
-            if ($this->settings["source"] && file_exists($file . "_src.js")) {
-                $file .= "_src.js";
-            } else if (file_exists($file . ".js")) {
+            if ($this->settings["source"] && file_exists($file . ".js")) {
                 $file .= ".js";
+            } else if (file_exists($file . ".min.js")) {
+                $file .= ".min.js";
             } else {
                 $file = "";
             }
@@ -134,7 +167,7 @@ class TinyMceCompressorAction extends CAction
         }
 
         // Generate hash for all files
-        $hash = md5(implode('', $allFiles ). $this->settings['baseUrl']);
+        $hash = md5(implode('', $allFiles) . $this->settings['baseUrl']);
 
         // Check if it supports gzip
         $zlibOn = ini_get('zlib.output_compression') || (ini_set('zlib.output_compression', 0) === false);
@@ -148,7 +181,7 @@ class TinyMceCompressorAction extends CAction
         $supportsGzip = $this->settings['compress'] && !empty($encoding) && !$zlibOn && function_exists('gzencode');
 
         // Set cache file name
-        $cacheFile = $this->settings["cache_dir"] . "/" . $hash . ($supportsGzip ? ".gz" : ".js");
+        $cacheFile = $this->settings["cache_dir"] . "/tinymce.gzip-" . $hash . ($supportsGzip ? ".gz" : ".js");
 
         // Set headers
         header("Content-type: text/javascript");
@@ -167,7 +200,7 @@ class TinyMceCompressorAction extends CAction
         }
 
         // Set base URL for where tinymce is loaded from
-        $buffer = "var tinyMCEPreInit={base:'" . $this->settings['baseUrl'] . "',suffix:''};";
+        $buffer = "var tinyMCEPreInit={base:'" . $this->settings['baseUrl'] . "',suffix:'.min'};";
 
         // Load all tinymce script files into buffer
         foreach ($allFiles as $file) {
@@ -209,31 +242,43 @@ class TinyMceCompressorAction extends CAction
 
         $urlParams = array();
 
+        $urlParams['js'] = '1';
+
         // Add plugins
-        if (isset($settings["plugins"]))
+        if (isset($settings["plugins"])) {
             $urlParams['plugins'] = (is_array($settings["plugins"]) ? implode(',', $settings["plugins"]) : $settings["plugins"]);
+        }
 
         // Add themes
-        if (isset($settings["themes"]))
+        if (isset($settings["themes"])) {
             $urlParams['themes'] = (is_array($settings["themes"]) ? implode(',', $settings["themes"]) : $settings["themes"]);
+        }
 
         // Add languages
-        if (isset($settings["languages"]))
+        if (isset($settings["languages"])) {
             $urlParams['languages'] = (is_array($settings["languages"]) ? implode(',', $settings["languages"]) : $settings["languages"]);
+        }
+
+        // Add disk_cache
+        if (isset($settings["disk_cache"])) {
+            $urlParams['diskcache'] = ($settings["disk_cache"] === true ? "true" : "false");
+        }
 
         // Add any explicitly specified files if the default settings have been overriden by the tag ones
         /*
-           * Specifying tag files will override (rather than merge with) any site-specific ones set in the
-           * TinyMCE_Compressor object creation.  Note that since the parameter parser limits content to alphanumeric
-           * only base filenames can be specified.  The file extension is assumed to be ".js" and the directory is
-           * the TinyMCE root directory.  A typical use of this is to include a script which initiates the TinyMCE object.
-           */
-        if (isset($settings["files"]))
+         * Specifying tag files will override (rather than merge with) any site-specific ones set in the
+         * TinyMCE_Compressor object creation.  Note that since the parameter parser limits content to alphanumeric
+         * only base filenames can be specified.  The file extension is assumed to be ".js" and the directory is
+         * the TinyMCE root directory.  A typical use of this is to include a script which initiates the TinyMCE object.
+         */
+        if (isset($settings["files"])) {
             $urlParams['files'] = (is_array($settings["files"]) ? implode(',', $settings["files"]) : $settings["files"]);
+        }
 
         // Add src flag
-        if (isset($settings["source"]))
+        if (isset($settings["source"])) {
             $urlParams['src'] = ($settings["source"] === true ? "true" : "false");
+        }
 
         return Yii::app()->createUrl($route, $urlParams);
     }

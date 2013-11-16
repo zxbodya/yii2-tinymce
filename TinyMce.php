@@ -43,7 +43,7 @@ class TinyMce extends CInputWidget
         'ar', 'bg_BG', 'bs', 'ca', 'cs', 'cy', 'da', 'de', 'de_AT', 'el', 'es', 'et', 'eu', 'fa', 'fi', 'fo',
         'fr_FR', 'gl', 'he_IL', 'hr', 'hu_HU', 'hy', 'id', 'it', 'ja', 'ka_GE', 'ko_KR', 'lb', 'lt', 'lv', 'nb_NO', 'nl',
         'pl', 'pt_BR', 'pt_PT', 'ro', 'ru', 'si_LK', 'sk', 'sl_SI', 'sr', 'sv_SE', 'ta', 'ta_IN', 'th_TH', 'tr_TR', 'ug', 'uk',
-        'uk_UA', 'vi', 'vi_VN', 'zh_CN', 'zh_TW','en_GB', 'km_KH', 'tg'); // widget supported languages
+        'uk_UA', 'vi', 'vi_VN', 'zh_CN', 'zh_TW', 'en_GB', 'km_KH', 'tg'); // widget supported languages
 
 
     private static $defaultSettings = array(
@@ -118,20 +118,19 @@ class TinyMce extends CInputWidget
     {
         $cs = Yii::app()->getClientScript();
         $cs->registerCoreScript('jquery');
-        //if ($this->compressorRoute === false) {
+        if ($this->compressorRoute === false) {
             $cs->registerScriptFile($this->assetsDir . '/js/tinymce/tinymce.min.js');
             $cs->registerScriptFile($this->assetsDir . '/js/tinymce/jquery.tinymce.min.js');
-        //} else {
-        //    throw new Exception('compressor support is not implemented for this version');
-        //
-        //    $cs->registerScriptFile(TinyMceCompressorAction::scripUrl($this->compressorRoute, array(
-        //        "plugins" => $this->settings['plugins'],
-        //        "themes" => $this->settings['theme'],
-        //        "languages" => $this->settings['language'],
-        //        'files' => 'jquery.tinymce',
-        //        'source' => defined('YII_DEBUG') && YII_DEBUG,
-        //    )));
-        //}
+        } else {
+            $opts = array(
+                'files' => 'jquery.tinymce',
+                'source' => defined('YII_DEBUG') && YII_DEBUG,
+            );
+            $opts["plugins"] = strtr(implode(',', $this->settings['plugins']), array(' ' => ','));
+            if (isset($this->settings['theme'])) $opts["themes"] = $this->settings['theme'];
+            $opts["languages"] = $this->settings['language'];
+            $cs->registerScriptFile(TinyMceCompressorAction::scripUrl($this->compressorRoute, $opts));
+        }
 
 
         if ($this->fileManager !== false) {
