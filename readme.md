@@ -7,6 +7,15 @@ Recently I have written my own widget for TinyMce and for elFinder with possibil
 
 Also I have added less ugly skin for tinyMce(modified version of cirkuitSkin).
 
+##TinyMCE Versions
+
+There is two TinyMCE versions - 3.x and new 4.x
+
+Extension has the same interfaces for both of them, but because they are different
+they will have slightly different settings.
+
+So when configuring it - refer to appropriate [documentation version](http://www.tinymce.com/wiki.php).
+
 ##Requirements
 
 * Tested with Yii 1.1.14, but should work with previous versions too
