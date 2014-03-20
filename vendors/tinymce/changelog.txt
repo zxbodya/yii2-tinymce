@@ -1,3 +1,66 @@
+Version 4.0.20 (2014-03-18)
+	Fixed so all unit tests can be executed in a headless phantomjs instance for CI testing.
+	Fixed so directionality setting gets applied to the preview dialog as well as the editor body element.
+	Fixed a performance issue with the "is" method in DOMUtils. Patch contributed by Paul Bosselaar.
+	Fixed bug where paste plugin wouldn't paste plain text properly when pasting using browser menus.
+	Fixed bug where focusable SVG elements would throw an error since className isn't a proper string.
+	Fixed bug where the preview plugin didn't properly support the document_base_url setting.
+	Fixed bug where the focusedEditor wouldn't be set to null when that editor was removed.
+	Fixed bug where Gecko would throw an exception when editors where removed.
+	Fixed bug where the FocusManager wouldn't handle selection restoration properly on older IE versions.
+	Fixed bug where the searchreplace plugin would produce an exception on very specific multiple searches.
+	Fixed bug where some events wasn't properly unbound when all editors where removed from page.
+	Fixed bug where tapping links on iOS 7.1 would open the link instead of placing the caret inside.
+	Fixed bug where holding the finger down on iOS 7.1 would open the link/image callout menu.
+	Fixed so the jQuery plugin returns null when getting the the tinymce instance of an element before it's initialized.
+	Fixed so selection normalization gets executed more often to reduce incorrect UI states on Gecko.
+	Fixed so the default action of closing the window on a form submission can be prevented using "preventDefault".
+Version 4.0.19 (2014-03-11)
+	Added support for CSS selector expressions in object_resizing option. Allows you to control what to resize.
+	Added addToTop compatibility to compat3x plugin enables more legacy 3.x plugins to work properly.
+	Fixed bug on IE where it wasn't possible to align images when they where floated left.
+	Fixed bug where the indent/outdent buttons was enabled though readonly mode was enabled.
+	Fixed bug where the nodeChanged event was fired when readonly mode was enabled.
+	Fixed bug where events like blur could be fired to editor instances that where manually removed on IE 11.
+	Fixed bug where IE 11 would move focus to menubar/toolbar when using the tab key in a form with an editor.
+	Fixed bug where drag/drop in Safari on Mac didn't work properly due to lack of support for modern dataTransfer object.
+	Fixed bug where the remove event wasn't properly executed when the editor instances where removed.
+	Fixed bug where the selection change handler on inline editors would fail if the editor instance was removed.
+Version 4.0.18 (2014-02-27)
+	Fixed bug where images would get class false/undefined when initially created.
+Version 4.0.17 (2014-02-26)
+	Added much better wai-aria accessibility support when it comes to keyboard navigation of complex UI controls.
+	Added dfn,code,samp,kbd,var,cite,mark,q elements to the default remove formats list. Patch contributed by Naim Hammadi.
+	Added var,cite,dfn,code,mark,q,sup,sub to the list of elements that gets cloned on enter. Patch contributed by Naim Hammadi.
+	Added new visual_anchor_class option to specify a custom class for inline anchors. Patch contributed by Naim Hammadi.
+	Added support for paste_data_images on WebKit/Blink when the user pastes image data.
+	Added support for highlighting the video icon when a video is added that produces an iframe. Patch contributed by monkeydiane.
+	Added image_class_list/link_class_list options to image/link dialogs to let the user select classes.
+	Fixed bug where the ObjectResizeStart event didn't get fired properly by the ControlSelection class.
+	Fixed bug where the autolink plugin would steal focus when loaded on IE 9+.
+	Fixed bug where the editor save method would remove the current selection when called on an inline editor.
+	Fixed bug where the formatter would merge span elements with parent bookmarks if an id format was used.
+	Fixed bug where WebKit/Blink browsers would scroll to the top of the editor when pasting into an empty element.
+	Fixed bug where removing the editor would cause an error about wrong document on IE 11 under specific circumstances.
+	Fixed bug where Gecko would place the caret at an incorrect location when using backspace.
+	Fixed bug where Gecko would throw "Wrong Document Error" for ranges that pointing to removed nodes.
+	Fixed bug where it wasn't possible to properly update the title and encoding properties in the fullpage plugin.
+	Fixed bug where paste plugin would produce an extra undo level on IE.
+	Fixed bug where the formatter would apply inline formatting outside the current word in if the selection was collapsed.
+	Fixed bug where it wasn't possible to delete tables on Chrome if you placed the selection within all the contents of the table.
+	Fixed bug where older IE versions wouldn't properly insert contents into table cells when editor focus was lost.
+	Fixed bug where older IE versions would fire focus/blur events even though the editor focus didn't change.
+	Fixed bug where IE 11 would add two trailing BR elements to the editor iframe body if the editor was hidden.
+	Fixed bug where the visualchars plugin wouldn't display non breaking spaces if they where inserted while the state was enabled.
+	Fixed bug where the wordcount plugin would be very slow some HTML where to much backtracking occured.
+	Fixed so pagebreak elements in the editor breaks pages when printing. Patch contributed by penc.
+	Fixed so UndoManager events pass though the original event that created the undo level such as a keydown, blur etc.
+	Fixed so the inserttime button is callsed insertdatetime the same as the menu item and plugin name.
+	Fixed so the word count plugin handles counting properly on most languages on the planet.
+	Fixed bug where the auroreize plugin would throw an error if the editor was manually removed within a few seconds.
+	Fixed bug where the image dialog would get stuck if the src was removed. Patch contribued by monkeydiane.
+	Fixed bug where there is an extra br tag for IE 9/10 that isn't needed. Patch contributed by monkeydiane.
+	Fixed bug where drag/drop in a scrolled editor would fail since it didn't use clientX/clientY cordinates. Patch contributed by annettem.
 Version 4.0.16 (2014-01-31)
 	Fixed bug where the editor wouldn't be properly rendered on IE 10 depending on the document.readyState.
 Version 4.0.15 (2014-01-31)
