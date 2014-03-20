@@ -40,9 +40,9 @@ class TinyMce extends CInputWidget
     public $fileManager = false;
     /** @var array Supported languages */
     private static $languages = array(
-        'ar', 'bg_BG', 'bs', 'ca', 'cs', 'cy', 'da', 'de', 'de_AT', 'el', 'es', 'et', 'eu', 'fa', 'fi', 'fo',
-        'fr_FR', 'gl', 'he_IL', 'hr', 'hu_HU', 'hy', 'id', 'it', 'ja', 'ka_GE', 'ko_KR', 'lb', 'lt', 'lv', 'nb_NO', 'nl',
-        'pl', 'pt_BR', 'pt_PT', 'ro', 'ru', 'si_LK', 'sk', 'sl_SI', 'sr', 'sv_SE', 'ta', 'ta_IN', 'th_TH', 'tr_TR', 'ug', 'uk',
+        'ar', 'ar_SA', 'bg_BG', 'bn_BD', 'bs', 'ca', 'cs', 'cy', 'da', 'de', 'de_AT', 'el', 'es', 'et', 'eu', 'fa', 'fi', 'fo',
+        'fr_FR', 'gl', 'he_IL', 'hr', 'hu_HU', 'hy', 'id', 'it', 'ja', 'ka_GE', 'ko_KR', 'lb', 'lt', 'lv', 'ml', 'mn_MN', 'nb_NO', 'nl',
+        'pl', 'pt_BR', 'pt_PT', 'ro', 'ru', 'si_LK', 'sk', 'sl_SI', 'sr', 'sv_SE', 'ta', 'ta_IN', 'th_TH', 'tr_TR', 'tt', 'ug', 'uk',
         'uk_UA', 'vi', 'vi_VN', 'zh_CN', 'zh_TW', 'en_GB', 'km_KH', 'tg', 'az', 'en_CA', 'is_IS',
         'be', 'dv', 'kk', 'ml_IN', 'gd',
     ); // widget supported languages
