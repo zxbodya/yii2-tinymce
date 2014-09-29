@@ -1,16 +1,21 @@
 {
-    "name": "z_bodya/yii-tinymce",
+    "name": "zxbodya/yii2-tinymce",
     "description": "Extension to use TinyMce with Compressor, SpellChecker and FileManager",
-    "keywords": ["wysiwyg", "tinymce"],
-    "type": "yii-extension",
-    "extra": {
-        "installer-name": "tinymce"
-    },
-    "license": "BSD-3-Clause",
+    "type": "yii2-extension",
+    "keywords": ["yii2","extension"],
+    "license": "MIT",
     "authors": [
         {
             "name": "Bogdan Savluk",
             "email": "savluk.bogdan@gmail.com"
         }
-    ]
+    ],
+    "require": {
+        "yiisoft/yii2": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "zxbodya\\yii2\\tinymce\\": ""
+        }
+    }
 }

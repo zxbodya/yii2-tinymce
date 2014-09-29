@@ -1,10 +1,15 @@
 <?php
+namespace zxbodya\yii2\tinymce;
+
+use yii\base\Object;
+use yii\web\JsExpression;
+use yii\web\View;
 
 /**
  * Abstract FileManager to use with TinyMce.
  * For example see elFinder extension.
  */
-abstract class TinyMceFileManager extends CComponent
+abstract class FileManager extends Object
 {
     /**
      * Initialize FileManager component, registers required JS
@@ -16,7 +21,12 @@ abstract class TinyMceFileManager extends CComponent
 
     /**
      * @abstract
-     * @return string JavaScript callback function, starts with "js:"
+     * @return JsExpression JavaScript callback function, starts with "js:"
      */
     abstract public function getFileBrowserCallback();
+
+    /**
+     * @param View $view
+     */
+    abstract public function registerAsset($view);
 }

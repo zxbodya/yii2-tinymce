@@ -1,32 +1,37 @@
 <?php
 
-require_once(dirname(__FILE__) . '/TinyMceCompressorAction.php');
+namespace zxbodya\yii2\tinymce;
+
+use Yii;
+use yii\helpers\Html;
+use yii\helpers\Json;
+use yii\helpers\Url;
+use yii\web\JqueryAsset;
+use yii\web\View;
+use yii\widgets\InputWidget;
 
 /**
- * @property
+ * This is just an example.
  */
-class TinyMce extends CInputWidget
+class TinyMce extends InputWidget
 {
+
     /** @var bool|string Route to compressor action */
     public $compressorRoute = false;
-
-    /**
-     * @deprecated use spellcheckerUrl instead
-     * @var bool|string Route to spellchecker action
-     */
-    public $spellcheckerRoute = false;
 
     /**
      * For example here could be url to yandex spellchecker service.
      * http://speller.yandex.net/services/tinyspell
      * More info about it here: http://api.yandex.ru/speller/doc/dg/tasks/how-to-spellcheck-tinymce.xml
      *
+     * Or you can build own spellcheking service using code provided by moxicode:
+     * http://www.tinymce.com/download/download.php
+     *
      * @var bool|string|array URL or an action route that can be used to create a URL or false if no url
      */
     public $spellcheckerUrl = false;
 
 
-    private $assetsDir;
     /** @var bool|string Must be set to force widget language */
     public $language = false; // editor language, if false app language is used
     /**
@@ -38,13 +43,78 @@ class TinyMce extends CInputWidget
      * )
      */
     public $fileManager = false;
+
     /** @var array Supported languages */
     private static $languages = array(
-        'ar', 'ar_SA', 'bg_BG', 'bn_BD', 'bs', 'ca', 'cs', 'cy', 'da', 'de', 'de_AT', 'el', 'es', 'et', 'eu', 'fa', 'fi', 'fo',
-        'fr_FR', 'gl', 'he_IL', 'hr', 'hu_HU', 'hy', 'id', 'it', 'ja', 'ka_GE', 'ko_KR', 'lb', 'lt', 'lv', 'ml', 'mn_MN', 'nb_NO', 'nl',
-        'pl', 'pt_BR', 'pt_PT', 'ro', 'ru', 'si_LK', 'sk', 'sl_SI', 'sr', 'sv_SE', 'ta', 'ta_IN', 'th_TH', 'tr_TR', 'tt', 'ug', 'uk',
-        'uk_UA', 'vi', 'vi_VN', 'zh_CN', 'zh_TW', 'en_GB', 'km_KH', 'tg', 'az', 'en_CA', 'is_IS',
-        'be', 'dv', 'kk', 'ml_IN', 'gd',
+        'ar',
+        'ar_SA',
+        'bg_BG',
+        'bn_BD',
+        'bs',
+        'ca',
+        'cs',
+        'cy',
+        'da',
+        'de',
+        'de_AT',
+        'el',
+        'es',
+        'et',
+        'eu',
+        'fa',
+        'fi',
+        'fo',
+        'fr_FR',
+        'gl',
+        'he_IL',
+        'hr',
+        'hu_HU',
+        'hy',
+        'id',
+        'it',
+        'ja',
+        'ka_GE',
+        'ko_KR',
+        'lb',
+        'lt',
+        'lv',
+        'ml',
+        'mn_MN',
+        'nb_NO',
+        'nl',
+        'pl',
+        'pt_BR',
+        'pt_PT',
+        'ro',
+        'ru',
+        'si_LK',
+        'sk',
+        'sl_SI',
+        'sr',
+        'sv_SE',
+        'ta',
+        'ta_IN',
+        'th_TH',
+        'tr_TR',
+        'tt',
+        'ug',
+        'uk',
+        'uk_UA',
+        'vi',
+        'vi_VN',
+        'zh_CN',
+        'zh_TW',
+        'en_GB',
+        'km_KH',
+        'tg',
+        'az',
+        'en_CA',
+        'is_IS',
+        'be',
+        'dv',
+        'kk',
+        'ml_IN',
+        'gd',
     ); // widget supported languages
 
 
@@ -57,13 +127,9 @@ class TinyMce extends CInputWidget
             "template paste textcolor"
         ),
         'toolbar' => "insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image | print preview media | forecolor backcolor",
-
-
         'toolbar_items_size' => 'small',
         'image_advtab' => true,
-
         'relative_urls' => false,
-
         'spellchecker_languages' => "+Русский=ru",
     );
     /** @var array Widget settings will override defaultSettings */
@@ -71,79 +137,96 @@ class TinyMce extends CInputWidget
 
     public function init()
     {
-        $dir = dirname(__FILE__) . '/vendors/tinymce';
-        $this->assetsDir = Yii::app()->assetManager->publish($dir);
+
         $this->settings = array_merge(self::$defaultSettings, $this->settings);
-        if ($this->language === false)
-            $this->settings['language'] = Yii::app()->language;
-        else
+        if ($this->language === false) {
+            $this->settings['language'] = Yii::$app->language;
+        } else {
             $this->settings['language'] = $this->language;
+        }
         if (!in_array($this->settings['language'], self::$languages)) {
             $lang = false;
             foreach (self::$languages as $i) {
-                if (strpos($this->settings['language'], $i))
+                if (strpos($this->settings['language'], $i)) {
                     $lang = $i;
+                }
             }
-            if ($lang !== false)
+            if ($lang !== false) {
                 $this->settings['language'] = $lang;
-            else
+            } else {
                 $this->settings['language'] = 'en';
+            }
         }
         $this->settings['language'] = strtr($this->settings['language'], '_', '-');
 
+        $assetsDir = $this->getView()->getAssetManager()->getBundle(TinyMceAsset::className())->baseUrl;
+        $this->settings['script_url'] = "{$assetsDir}/tiny_mce.js";
+
+
         if ($this->spellcheckerUrl !== false) {
             $this->settings['plugins'][] = 'spellchecker';
-            $this->settings['spellchecker_rpc_url'] = CHtml::normalizeUrl($this->spellcheckerUrl);
+            if (is_array($this->spellcheckerUrl)) {
+                $this->settings['spellchecker_rpc_url'] = Url::toRoute($this->spellcheckerUrl);
+            } else {
+                $this->settings['spellchecker_rpc_url'] = $this->spellcheckerUrl;
+            }
         }
-
     }
 
     public function run()
     {
-        list($name, $id) = $this->resolveNameID();
-        if (isset($this->htmlOptions['id']))
-            $id = $this->htmlOptions['id'];
-        else
-            $this->htmlOptions['id'] = $id;
-        if (isset($this->htmlOptions['name']))
-            $name = $this->htmlOptions['name'];
+        if (!isset($this->options['id'])) {
+            $this->options['id'] = $this->getId();
+        }
 
         if (isset($this->model)) {
-            echo CHtml::textArea($name, CHtml::resolveValue($this->model, $this->attribute), $this->htmlOptions);
+            echo Html::activeTextarea($this->model, $this->attribute, $this->options);
         } else {
-            echo CHtml::textArea($name, $this->value, $this->htmlOptions);
+            echo Html::textArea($this->name, $this->value, $this->options);
         }
-        $this->registerScripts($id);
+
+        $this->registerScripts();
     }
 
-    private function registerScripts($id)
+    private function registerScripts()
     {
-        $cs = Yii::app()->getClientScript();
-        $cs->registerCoreScript('jquery');
+        $id = $this->options['id'];
+        $view = $this->getView();
+
         if ($this->compressorRoute === false) {
-            $cs->registerScriptFile($this->assetsDir . '/js/tinymce/tinymce.min.js');
-            $cs->registerScriptFile($this->assetsDir . '/js/tinymce/jquery.tinymce.min.js');
+            TinyMceAsset::register($view);
         } else {
             $opts = array(
                 'files' => 'jquery.tinymce',
                 'source' => defined('YII_DEBUG') && YII_DEBUG,
             );
             $opts["plugins"] = strtr(implode(',', $this->settings['plugins']), array(' ' => ','));
-            if (isset($this->settings['theme'])) $opts["themes"] = $this->settings['theme'];
+            if (isset($this->settings['theme'])) {
+                $opts["themes"] = $this->settings['theme'];
+            }
             $opts["languages"] = $this->settings['language'];
-            $cs->registerScriptFile(TinyMceCompressorAction::scripUrl($this->compressorRoute, $opts));
+
+            $view->registerJsFile(
+                TinyMceCompressorAction::scripUrl($this->compressorRoute, $opts),
+                [
+                    'depends' => [
+                        'yii\web\JqueryAsset'
+                    ]
+                ]
+            );
         }
 
 
         if ($this->fileManager !== false) {
-            /** @var $fm TinyMceFileManager */
-            $fm = Yii::createComponent($this->fileManager);
+            /** @var $fm FileManager */
+            $fm = Yii::createObject($this->fileManager);
             $fm->init();
+            $fm->registerAsset($view);
             $this->settings['file_browser_callback'] = $fm->getFileBrowserCallback();
         }
 
-        $settings = CJavaScript::encode($this->settings);
+        $settings = Json::encode($this->settings);
 
-        $cs->registerScript("{$id}_tinyMce_init", "$('#{$id}').tinymce({$settings});");
+        $this->getView()->registerJs("$('#{$id}').tinymce({$settings});");
     }
 }

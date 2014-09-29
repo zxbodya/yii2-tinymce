@@ -1,16 +1,37 @@
 <?php
+namespace zxbodya\yii2\tinymce;
+
+use Yii;
+use yii\base\Action;
+use yii\helpers\Url;
+
 /**
- * Some code come from:
+ * tinymce.gzip.php
  *
- * tiny_mce_gzip.php Version 2.0.4 (2011-03-23)
- *
- * Copyright 2010, Moxiecode Systems AB
+ * Copyright, Moxiecode Systems AB
  * Released under LGPL License.
  *
  * License: http://tinymce.moxiecode.com/license
+ * Contributing: http://tinymce.moxiecode.com/contributing
  */
 
-class TinyMceCompressorAction extends CAction
+/**
+ * This class combines and compresses the TinyMCE core, plugins, themes and
+ * language packs into one disk cached gzipped request. It improves the loading speed of TinyMCE dramatically but
+ * still provides dynamic initialization.
+ *
+ * Example of direct usage:
+ * require_once("../js/tinymce/tinymce.gzip.php");
+ *
+ * // Renders script tag with compressed scripts
+ * TinyMCE_Compressor::renderTag(array(
+ *    "url" => "../js/tinymce/tinymce.gzip.php",
+ *    "plugins" => "pagebreak,style",
+ *    "themes" => "advanced",
+ *    "languages" => "en"
+ * ));
+ */
+class TinyMceCompressorAction extends Action
 {
     /**
      * Add any site-specific defaults here that you may wish to implement. For example:
@@ -38,26 +59,23 @@ class TinyMceCompressorAction extends CAction
     {
         $this->settings = array_merge(self::$defaultSettings, $this->settings);
 
+
         $dir = dirname(__FILE__) . '/vendors/tinymce/js/tinymce';
-        if (empty($this->settings["cache_dir"]))
-            $this->settings["cache_dir"] = Yii::getPathOfAlias('application.runtime');
-        if (empty($this->settings["tinymce_dir"]))
+        if (empty($this->settings["cache_dir"])) {
+            $this->settings["cache_dir"] = Yii::getAlias('@runtime');
+        }
+        if (empty($this->settings["tinymce_dir"])) {
             $this->settings["tinymce_dir"] = dirname(__FILE__) . '/vendors/tinymce/js/tinymce';
-        if (empty($this->settings["baseUrl"]))
-            $this->settings["baseUrl"] = Yii::app()->assetManager->publish($dir);
+        }
+        if (empty($this->settings["baseUrl"])) {
+            list($_, $this->settings["baseUrl"]) = Yii::$app->assetManager->publish($dir);
+        }
     }
 
     public function run()
     {
         $this->init();
         $this->handleRequest();
-
-        if (Yii::app()->log instanceof CLogRouter) {
-            foreach (Yii::app()->log->routes as $route) {
-                if ($route instanceof CWebLogRoute)
-                    $route->enabled = false;
-            }
-        }
     }
 
     /**
@@ -73,18 +91,10 @@ class TinyMceCompressorAction extends CAction
 
         // Override settings with querystring params
         $plugins = self::getParam("plugins");
-        if ($plugins)
-            $this->settings["plugins"] = $plugins;
-        $plugins = explode(',', $this->settings["plugins"]);
-
-        $themes = self::getParam("themes");
-        if ($themes) // Plugins
-            $plugins = self::getParam("plugins");
         if ($plugins) {
             $this->settings["plugins"] = $plugins;
         }
-
-        //$plugins = preg_split('/,/', $this->settings["plugins"], -1, PREG_SPLIT_NO_EMPTY);
+        $plugins = array_unique(preg_split('/,/', $this->settings["plugins"], -1, PREG_SPLIT_NO_EMPTY));
 
         // Themes
         $themes = self::getParam("themes");
@@ -92,7 +102,7 @@ class TinyMceCompressorAction extends CAction
             $this->settings["themes"] = $themes;
         }
 
-        $themes = preg_split('/,/', $this->settings["themes"], -1, PREG_SPLIT_NO_EMPTY);
+        $themes = array_unique(preg_split('/,/', $this->settings["themes"], -1, PREG_SPLIT_NO_EMPTY));
 
         // Languages
         $languages = self::getParam("languages");
@@ -100,7 +110,7 @@ class TinyMceCompressorAction extends CAction
             $this->settings["languages"] = $languages;
         }
 
-        $languages = preg_split('/,/', $this->settings["languages"], -1, PREG_SPLIT_NO_EMPTY);
+        $languages = array_unique(preg_split('/,/', $this->settings["languages"], -1, PREG_SPLIT_NO_EMPTY));
 
         // Files
         $tagFiles = self::getParam("files");
@@ -128,6 +138,7 @@ class TinyMceCompressorAction extends CAction
         // Add core languages
         foreach ($languages as $language) {
             $files[] = "langs/" . $language;
+
         }
 
         // Add plugins
@@ -144,6 +155,7 @@ class TinyMceCompressorAction extends CAction
             $files[] = "themes/" . $theme . "/theme";
 
             foreach ($languages as $language) {
+
                 $files[] = "themes/" . $theme . "/langs/" . $language;
             }
         }
@@ -157,10 +169,16 @@ class TinyMceCompressorAction extends CAction
 
             if ($this->settings["source"] && file_exists($file . ".js")) {
                 $file .= ".js";
-            } else if (file_exists($file . ".min.js")) {
-                $file .= ".min.js";
             } else {
-                $file = "";
+                if (file_exists($file . ".min.js")) {
+                    $file .= ".min.js";
+                } else {
+                    if (file_exists($file . ".js")) {
+                        $file .= ".js";
+                    } else {
+                        $file = "";
+                    }
+                }
             }
 
             $allFiles[$i] = $file;
@@ -175,8 +193,9 @@ class TinyMceCompressorAction extends CAction
         $encoding = preg_match('/\b(x-gzip|gzip)\b/', $encodings, $match) ? $match[1] : "";
 
         // Is northon antivirus header
-        if (isset($_SERVER['---------------']))
+        if (isset($_SERVER['---------------'])) {
             $encoding = "x-gzip";
+        }
 
         $supportsGzip = $this->settings['compress'] && !empty($encoding) && !$zlibOn && function_exists('gzencode');
 
@@ -189,13 +208,15 @@ class TinyMceCompressorAction extends CAction
         header("Expires: " . gmdate("D, d M Y H:i:s", time() + $expiresOffset) . " GMT");
         header("Cache-Control: public, max-age=" . $expiresOffset);
 
-        if ($supportsGzip)
+        if ($supportsGzip) {
             header("Content-Encoding: " . $encoding);
+        }
 
 
         // Use cached file
         if ($this->settings['disk_cache'] && file_exists($cacheFile)) {
             readfile($cacheFile);
+
             return;
         }
 
@@ -212,15 +233,20 @@ class TinyMceCompressorAction extends CAction
         }
 
         // Mark all themes, plugins and languages as done
-        $buffer .= 'tinymce.each("' . implode(',', $files) . '".split(","),function(f){tinymce.ScriptLoader.markDone(tinyMCE.baseURL+"/"+f+".js");});';
+        $buffer .= 'tinymce.each("' . implode(
+                ',',
+                $files
+            ) . '".split(","),function(f){tinymce.ScriptLoader.markDone(tinyMCE.baseURL+"/"+f+".js");});';
 
         // Compress data
-        if ($supportsGzip)
+        if ($supportsGzip) {
             $buffer = gzencode($buffer, 9, FORCE_GZIP);
+        }
 
         // Write cached file
-        if ($this->settings["disk_cache"])
+        if ($this->settings["disk_cache"]) {
             @file_put_contents($cacheFile, $buffer);
+        }
 
         // Stream contents to client
         echo $buffer;
@@ -231,8 +257,10 @@ class TinyMceCompressorAction extends CAction
     /**
      * Returns TinyMCE script url
      * @static
-     * @param $route string route to compressor action
+     *
+     * @param $route    string route to compressor action
      * @param $settings array name/value array with settings for the script.
+     *
      * @return string url for script
      */
     public static function scripUrl($route, $settings)
@@ -246,17 +274,26 @@ class TinyMceCompressorAction extends CAction
 
         // Add plugins
         if (isset($settings["plugins"])) {
-            $urlParams['plugins'] = (is_array($settings["plugins"]) ? implode(',', $settings["plugins"]) : $settings["plugins"]);
+            $urlParams['plugins'] = (is_array($settings["plugins"]) ? implode(
+                ',',
+                $settings["plugins"]
+            ) : $settings["plugins"]);
         }
 
         // Add themes
         if (isset($settings["themes"])) {
-            $urlParams['themes'] = (is_array($settings["themes"]) ? implode(',', $settings["themes"]) : $settings["themes"]);
+            $urlParams['themes'] = (is_array($settings["themes"]) ? implode(
+                ',',
+                $settings["themes"]
+            ) : $settings["themes"]);
         }
 
         // Add languages
         if (isset($settings["languages"])) {
-            $urlParams['languages'] = (is_array($settings["languages"]) ? implode(',', $settings["languages"]) : $settings["languages"]);
+            $urlParams['languages'] = (is_array($settings["languages"]) ? implode(
+                ',',
+                $settings["languages"]
+            ) : $settings["languages"]);
         }
 
         // Add disk_cache
@@ -272,7 +309,10 @@ class TinyMceCompressorAction extends CAction
          * the TinyMCE root directory.  A typical use of this is to include a script which initiates the TinyMCE object.
          */
         if (isset($settings["files"])) {
-            $urlParams['files'] = (is_array($settings["files"]) ? implode(',', $settings["files"]) : $settings["files"]);
+            $urlParams['files'] = (is_array($settings["files"]) ? implode(
+                ',',
+                $settings["files"]
+            ) : $settings["files"]);
         }
 
         // Add src flag
@@ -280,7 +320,7 @@ class TinyMceCompressorAction extends CAction
             $urlParams['src'] = ($settings["source"] === true ? "true" : "false");
         }
 
-        return Yii::app()->createUrl($route, $urlParams);
+        return Url::to([$route] + $urlParams);
     }
 
     /**
@@ -288,20 +328,27 @@ class TinyMceCompressorAction extends CAction
      *
      * @param String $name Name of the query string param to get.
      * @param String $default Default value if the query string item shouldn't exist.
+     *
      * @return String Sanitized query string parameter value.
      */
     public static function getParam($name, $default = "")
     {
-        if (!isset($_GET[$name]))
+        if (!isset($_GET[$name])) {
             return $default;
+        }
 
-        return preg_replace("/[^0-9a-z\-_,.]+/i", "", $_GET[$name]); // Sanatize for security, remove anything but 0-9,a-z,-_,
+        return preg_replace(
+            "/[^0-9a-z\-_,.]+/i",
+            "",
+            $_GET[$name]
+        ); // Sanatize for security, remove anything but 0-9,a-z,-_,
     }
 
     /**
      * Parses the specified time format into seconds. Supports formats like 10h, 10d, 10m.
      *
      * @param String $time Time format to convert into seconds.
+     *
      * @return Int Number of seconds for the specified format.
      */
     private function parseTime($time)
@@ -309,16 +356,19 @@ class TinyMceCompressorAction extends CAction
         $multipel = 1;
 
         // Hours
-        if (strpos($time, "h") > 0)
+        if (strpos($time, "h") > 0) {
             $multipel = 3600;
+        }
 
         // Days
-        if (strpos($time, "d") > 0)
+        if (strpos($time, "d") > 0) {
             $multipel = 86400;
+        }
 
         // Months
-        if (strpos($time, "m") > 0)
+        if (strpos($time, "m") > 0) {
             $multipel = 2592000;
+        }
 
         // Trim string
         return intval($time) * $multipel;
@@ -328,6 +378,7 @@ class TinyMceCompressorAction extends CAction
      * Returns the contents of the script file if it exists and removes the UTF-8 BOM header if it exists.
      *
      * @param String $file File to load.
+     *
      * @return String File contents or empty string if it doesn't exist.
      */
     private function getFileContents($file)
@@ -335,8 +386,9 @@ class TinyMceCompressorAction extends CAction
         $content = file_get_contents($file);
 
         // Remove UTF-8 BOM
-        if (substr($content, 0, 3) === pack("CCC", 0xef, 0xbb, 0xbf))
+        if (substr($content, 0, 3) === pack("CCC", 0xef, 0xbb, 0xbf)) {
             $content = substr($content, 3);
+        }
 
         return $content;
     }
