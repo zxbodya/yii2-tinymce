@@ -1,100 +1,98 @@
-TinyMCE integration for yii
+TinyMCE integration for Yii2
 ===========================
-Almost in every application, i have need in wysiwyg editor for content.
-In most of them I have used tinymce extension writen by MetaYii(with some ugly changes, added by me, to connect elFinder file manager to it).
+Yii2 extension to simplify tinymce wyiwyg editor usage in your application.
 
-Recently I have written my own widget for TinyMce and for elFinder with possibility of integrating them. Also I have written separate actions for TinyMce compessor and for spellchecker plugin. So i think that my code looks more cleaner than something like tinymceelfinder extension, that has similar functionality.
+Extension is based on Yii 1.1 version: https://github.com/zxbodya/yii-tinymce
 
-Also I have added less ugly skin for tinyMce(modified version of cirkuitSkin).
+Provides:
 
-##TinyMCE Versions
-
-There is two TinyMCE versions - 3.x and new 4.x
-
-Extension has the same interfaces for both of them, but because they are different
-they will have slightly different settings.
-
-So when configuring it - refer to appropriate [documentation version](http://www.tinymce.com/wiki.php).
-
-##Requirements
-
-* Tested with Yii 1.1.14, but should work with previous versions too
-* To use with elFinder, requires https://bitbucket.org/z_bodya/yii-elfinder
-
-##Usage
-
-1. Checkout source code to ext.tinymce
-2. To use spellchecker and compressor, create controller and add corresponding actions to it
-3. Use it as any other input widget:
-4. More about elFinder extension here: https://bitbucket.org/z_bodya/yii-elfinder
-
-        :::php
-        // controller for tinyMce
-        Yii::import('ext.tinymce.*');
-        class TinyMceController extends CController
-        {
-             public function actions()
-             {
-                  return array(
-                       'spellchecker' => array(
-                           'class' => 'TinyMceSpellcheckerAction',
-                       ),
-                  );
-              }
-        }
-        // in view
-        $this->widget('ext.tinymce.TinyMce', array(
-            'model' => $model,
-            'attribute' => 'tinyMceArea',
-            // Optional config
-            //'spellcheckerUrl' => array('tinyMce/spellchecker'),
-            // or use yandex spell: http://api.yandex.ru/speller/doc/dg/tasks/how-to-spellcheck-tinymce.xml
-            'spellcheckerUrl' => 'http://speller.yandex.net/services/tinyspell',
-            'fileManager' => array(
-                'class' => 'ext.elFinder.TinyMceElFinder',
-                'connectorRoute'=>'admin/elfinder/connector',
-            ),
-            'htmlOptions' => array(
-                'rows' => 6,
-                'cols' => 60,
-            ),
-        ));
+* widget
+* compressor action
+* stub for integration with file managers like elFinder
 
 
-##CSRF token validation problem, for spellchecker requsts
-By default Yii validates csrf token for all requsts, but spellchecker has requst content-type "application/json" - so even if we pass csrf token in request, yii will not validate it.
+##Installation
+The preferred way to install this extension is through [composer](https://getcomposer.org/).
 
-[Forum discussion about this](http://www.yiiframework.com/forum/index.php/topic/37367-csrf-validation-problem-for-requests-with-content-type-applicationjson/page__gopid__180225 "")
+Either run
 
-Also there is no need in csrf validation for spellchecker service, so possible solutions is to skip validation for such requests. I order to do so we need to extend CHttpRequst like in sample below:
+`php composer.phar require --prefer-dist zxbodya/yii2-tinymce "*@dev"`
 
+or add
 
-        ::php
-        class HttpRequest extends CHttpRequest
-        {
-            public function validateCsrfToken($event)
-            {
-                $contentType = isset($_SERVER["CONTENT_TYPE"]) ? $_SERVER["CONTENT_TYPE"] : null;
-                if ($contentType !== 'application/json')
-                    parent::validateCsrfToken($event);
-            }
-        }
+`"zxbodya/yii2-tinymce": "*@dev"`
 
+to the require section of your `composer.json` file.
+## Usage
 
-And add it into application configuration:
+### Widget basic usage
 
-        ::php
-        // application components
-        'components' => array(
-            'request' => array(
-               'class' => 'HttpRequest',
-               'enableCsrfValidation' => true,
-            ),
-            ...
-        ),
+```php
+$form->field($model, 'content')->widget(TinyMce::className())
+```
 
-##Resources
+### Scripts Compressor Action
 
- * [Extension page](https://bitbucket.org/z_bodya/yii-tinymce)
- * [elFinder extension](http://www.yiiframework.com/extension/elfinder/)
- * [TinyMce page](http://www.tinymce.com/)
+This can be used to optimize widget loading time.
+
+At fist setup compressor action:
+
+```php
+public function actions()
+{
+    return [
+        'tinyMceCompressor' => [
+            'class' => TinyMceCompressorAction::className(),
+        ],
+    ];
+}
+```
+
+Next add route to configured action to widget ooptions:
+
+```php
+$form->field($model, 'content')->widget(
+    TinyMce::className(),
+    ['compressorRoute' => 'test/tinyMceCompressor']
+)
+```
+
+### ElFinder Fille manager 
+At fisrt install `zxbodya/yii2-elfinder` extesion.
+
+[https://github.com/zxbodya/yii2-elfinder](https://github.com/zxbodya/yii2-elfinder)
+
+And configure connector action for it.
+
+Next add file manager settings to widget:
+
+```php
+$form->field($model, 'content')->widget(
+    TinyMce::className(),
+    [
+        'fileManager' => [
+            'class' => TinyMceElFinder::className(),
+            'connectorRoute' => 'el-finder/connector',
+        ],
+    ]
+)
+```
+
+### Spellchecker 
+TinyMce has bundled plugin for spellchecking but it requires backed to work...
+
+You can use yandex spellchecker service.
+
+```php
+$form->field($model, 'content')->widget(
+    TinyMce::className(),
+    ['spellcheckerUrl'=>'http://speller.yandex.net/services/tinyspell']
+)
+```
+
+More info about it here: 
+
+[http://api.yandex.ru/speller/doc/dg/tasks/how-to-spellcheck-tinymce.xml](http://api.yandex.ru/speller/doc/dg/tasks/how-to-spellcheck-tinymce.xml)
+
+Or you can build own spellcheking service using code provided by moxicode:
+[http://www.tinymce.com/download/download.php](http://www.tinymce.com/download/download.php)
