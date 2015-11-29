@@ -168,7 +168,6 @@ class TinyMce extends InputWidget
                 $this->settings['language'] = 'en';
             }
         }
-        $this->settings['language'] = strtr($this->settings['language'], '_', '-');
 
         $assetsDir = $this->getView()->getAssetManager()->getBundle(TinyMceAsset::className())->baseUrl;
         $this->settings['script_url'] = "{$assetsDir}/tiny_mce.js";
