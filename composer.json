@@ -16,7 +16,7 @@
     }
   ],
   "require": {
-    "yiisoft/yii2": "*"
+    "yiisoft/yii2": "^2.0.13"
   },
   "suggest": {
     "zxbodya/yii2-elfinder": "To add elFinder file manager"
