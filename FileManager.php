@@ -1,7 +1,7 @@
 <?php
 namespace zxbodya\yii2\tinymce;
 
-use yii\base\Object;
+use yii\base\BaseObject;
 use yii\web\JsExpression;
 use yii\web\View;
 
@@ -9,7 +9,7 @@ use yii\web\View;
  * Abstract FileManager to use with TinyMce.
  * For example see elFinder extension.
  */
-abstract class FileManager extends Object
+abstract class FileManager extends BaseObject
 {
     /**
      * Initialize FileManager component, registers required JS
